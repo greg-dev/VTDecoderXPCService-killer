@@ -2,7 +2,7 @@
 
 const { exec } = require('child_process');
 
-const processName = 'com.apple.coremedia.videodecoder';
+const processName = 'VTDecoderXPCService';
 const interval = 10000;
 
 function now() {
@@ -15,15 +15,19 @@ function now() {
 
 function getProcessesIds(processName) {
   const filter = `grep ${processName}`;
-  const filteredListCommand = `ps x | ${filter}`;
+  const filteredListCommand = `ps aux | ${filter}`;
   return new Promise((resolve, reject) => {
-    exec(filteredListCommand, (error, stdout, stderr) => {
+    exec(filteredListCommand, (error, stdout) => {
       if (error) {
         reject([]);
         return;
       }
       const lines = stdout.split(/\r?\n/).filter(line => !line.includes(filter));
-      const ids = lines.map(line => line.trim().split(' ')[0]).filter(id => id);
+      const ids = lines
+        .map(line => line.trim()
+        .replace(/  +/g, ' ')
+        .split(' ')[1])
+        .filter(id => id);
       resolve(ids);
     });
   });
